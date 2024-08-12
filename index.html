@@ -11,6 +11,7 @@
 
     const imageInput = $('#image-input');
     const itemsSection = $('#selector-items');
+    const resetButton = $("#reset-tier-button");
 
     function createItem(src){
       const imgElement = document.createElement('img');
@@ -25,18 +26,24 @@
       return imgElement;
     }
 
-    imageInput.addEventListener('change', (event) => {
-      const [file] = event.target.files;
+    function useFilesToCreateItems(files){
+      if (files && files.length > 0){
 
-      if (file){
-        const reader = new FileReader();
+        Array.from(files).forEach(file =>{
+          const reader = new FileReader();
 
-        reader.onload = (eventReader) => {
-          createItem(eventReader.target.result);
-        }
-
-        reader.readAsDataURL(file);
+          reader.onload = (eventReader) => {
+            createItem(eventReader.target.result);
+          }
+          reader.readAsDataURL(file);
+        })
       }
+    }
+
+    imageInput.addEventListener('change', (event) => {
+      const { files } = event.target;
+
+      useFilesToCreateItems(files);
     });
 
     let draggedElement = null;
@@ -69,16 +76,26 @@
       }
 
       currentTarget.classList.remove('drag-over');
+      currentTarget.querySelector('.drag-preview')?.remove();
+
     }
 
     function handleDragOver(event){
       event.preventDefault();
 
-      const {currentTarget} = event;
+      const {currentTarget, dataTransfer} = event;
       
       if(sourceContainer == currentTarget) return;
 
       currentTarget.classList.add('drag-over');
+
+      const dragPreview = document.querySelector('.drag-preview');
+
+      if(draggedElement && !dragPreview){
+        const previewElement = draggedElement.cloneNode(true);
+        previewElement.classList.add('drag-preview');
+        currentTarget.appendChild(previewElement);
+      }
     }
 
     function handleDragLeave(event){
@@ -86,6 +103,7 @@
       const {currentTarget} = event;
 
       currentTarget.classList.remove('drag-over');
+      currentTarget.querySelector('.drag-preview')?.remove();
     }
 
     function handleDragStart (event){
@@ -98,6 +116,14 @@
       draggedElement = null;
       sourceContainer = null;
     }
+
+    resetButton.addEventListener('click',()=>{
+      const items = $$('.tier .item-image');
+      items.forEach(item => {
+        item.remove();
+        itemsSection. appendChild(item);
+      });
+    });
 
   </script>
 </head>
@@ -142,10 +168,10 @@
       <section id="selector-buttons">
         <label>
           <svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="1"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-circle-plus"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" /><path d="M9 12h6" /><path d="M12 9v6" /></svg>
-          <input accept="image/*" type="file" id="image-input" hidden>
+          <input multiple accept="image/*" type="file" id="image-input" hidden>
         </label>
 
-        <button>
+        <button id="reset-tier-button">
           <svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="1"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-restore"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3.06 13a9 9 0 1 0 .49 -4.087" /><path d="M3 4.001v5h5" /><path d="M12 12m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" /></svg>
         </button>
       </section>
