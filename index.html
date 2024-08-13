@@ -61,6 +61,31 @@
     itemsSection.addEventListener('dragover',handleDragOver);
     itemsSection.addEventListener('dragleave',handleDragLeave);
 
+    itemsSection.addEventListener('drop', handleDropFromDesktop);
+    itemsSection.addEventListener('dragover', handleDragOverFromDesktop);
+
+    function handleDragOverFromDesktop(event){
+      event.preventDefault();
+
+      const {currentTarget, dataTransfer} = event;
+    
+      if(dataTransfer.types.includes('Files')){
+        currentTarget.classList.add('drag-files');
+
+      }
+
+    }
+
+    function handleDropFromDesktop (event){
+      event.preventDefault();
+      const {currentTarget, dataTransfer} = event;
+      if (dataTransfer.types.includes('Files')){
+        currentTarget.classList.remove('drag-files');
+        const files = dataTransfer.files;
+        useFilesToCreateItems(files);
+      }
+    }
+
     function handleDrop(event){
       event.preventDefault();
 
